@@ -1,28 +1,39 @@
-name: macOS-Xcode-Baglantisi
+name: macOS-Xcode-Sistemi
 on: workflow_dispatch
 
 jobs:
   macos-calistir:
-    runs-on: macos-12 # Daha esnek olan eski sürümü zorluyoruz
+    runs-on: macos-12
     steps:
-      - name: Sistemi Hazırla
-        run: brew install tmate
-
-      - name: SSH ve Ekran Tüneli Oluştur
+      - name: Gerekli Aracları Yukle
         run: |
-          # tmate ile bir arka kapı açıyoruz
-          tmate -S /tmp/tmate.sock new-session -d
-          tmate -S /tmp/tmate.sock wait tmate-ready
-          # Bağlantı adresini ekrana yazdır
-          tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}'
+          brew install --cask ngrok
+          brew install tigervnc
           
-      - name: Xcode Kontrol
+      - name: Ngrok Giris
+        run: ngrok config add-authtoken "${{ secrets.NGROK_AUTH_TOKEN }}"
+        
+      - name: Sanal Masaustu Olustur (Apple Servisi Olmadan)
         run: |
-          # Xcode yüklü mü kontrol et ve yolunu göster
-          xcode-select -p
+          # VNC sifresini 123456 yapıyoruz
+          mkdir -p ~/.vnc
+          echo "123456" | vncpasswd -f > ~/.vnc/passwd
+          chmod 600 ~/.vnc/passwd
+          
+          # Apple'ın kilitli ekranını değil, yeni bir sanal ekran açıyoruz
+          # Bu komut sistem hatası (Exit Code 10) vermez.
+          vncserver :1 -geometry 1280x800 -depth 24
+          
+      - name: Tuneli Baslat ve Baglan
+        run: |
+          # VNC portunu (5901) dısarı acıyoruz
+          ngrok tcp --region eu 5901 > /dev/null &
+          sleep 20
+          # Baglantı adresini ekrana yazdır
+          curl --silent http://127.0.0.1 | jq -r '.tunnels.public_url'
+          
+      - name: Xcode Kontrol ve Bekleme
+        run: |
+          echo "Sistem Hazir! Xcode Yolunu Kontrol Ediyoruz:"
           ls /Applications/Xcode.app
-          
-      - name: 6 Saat Boyunca Sistemi Açık Tut
-        run: |
-          echo "SİSTEM HAZIR! Yukarıdaki SSH adresini kopyalayın."
           sleep 21600
