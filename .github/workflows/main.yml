@@ -3,9 +3,9 @@ on: workflow_dispatch
 
 jobs:
   macos-calistir:
-    runs-on: macos-12
+    runs-on: macos-13
     steps:
-      - name: Gerekli Aracları Yukle
+      - name: Aracları Yukle
         run: |
           brew install --cask ngrok
           brew install tigervnc
@@ -13,27 +13,24 @@ jobs:
       - name: Ngrok Giris
         run: ngrok config add-authtoken "${{ secrets.NGROK_AUTH_TOKEN }}"
         
-      - name: Sanal Masaustu Olustur (Apple Servisi Olmadan)
+      - name: Sanal Ekran Ac (Hatasiz Mod)
         run: |
-          # VNC sifresini 123456 yapıyoruz
+          # Sifre dosyasini otomatik olusturuyoruz (Sifre: 123456)
           mkdir -p ~/.vnc
           echo "123456" | vncpasswd -f > ~/.vnc/passwd
           chmod 600 ~/.vnc/passwd
           
-          # Apple'ın kilitli ekranını değil, yeni bir sanal ekran açıyoruz
-          # Bu komut sistem hatası (Exit Code 10) vermez.
+          # Hata veren 'kickstart' yerine kendi sanal ekranimizi aciyoruz
+          # Bu komut eski sifre sormaz ve hata vermez
           vncserver :1 -geometry 1280x800 -depth 24
           
       - name: Tuneli Baslat ve Baglan
         run: |
-          # VNC portunu (5901) dısarı acıyoruz
+          # VNC Portu (5901) uzerinden tunel aciyoruz
           ngrok tcp --region eu 5901 > /dev/null &
           sleep 20
-          # Baglantı adresini ekrana yazdır
+          # Baglanti adresini ekrana yazdir
           curl --silent http://127.0.0.1 | jq -r '.tunnels.public_url'
           
-      - name: Xcode Kontrol ve Bekleme
-        run: |
-          echo "Sistem Hazir! Xcode Yolunu Kontrol Ediyoruz:"
-          ls /Applications/Xcode.app
-          sleep 21600
+      - name: 6 Saat Acik Tut
+        run: sleep 21600
