@@ -1,0 +1,26 @@
+name: macOS-VNC-Baglantisi
+on: workflow_dispatch
+
+jobs:
+  macos-calistir:
+    runs-on: macos-latest
+    steps:
+      - name: Ngrok Yukle
+        run: brew install --cask ngrok
+      
+      - name: Ngrok Giris
+        run: ngrok config add-authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
+      
+      - name: Ekran Paylasimini Ayarla
+        run: |
+          sudo dscl . -passwd /Users/runner 1234
+          sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate -configure -access -on -restart -agent -privs -all -allowAccessFor -allUsers
+          
+      - name: Tuneli Baslat ve Adresi Ver
+        run: |
+          ngrok tcp 5900 &
+          sleep 10
+          curl --silent http://127.0.0.1 | jq '.tunnels[0].public_url'
+          
+      - name: 6 Saat Acik Tut
+        run: sleep 21600
