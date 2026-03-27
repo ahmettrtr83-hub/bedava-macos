@@ -3,7 +3,7 @@ on: workflow_dispatch
 
 jobs:
   macos-calistir:
-    runs-on: macos-13 # Hata vermeyen daha stabil bir sürüm seçtik
+    runs-on: macos-13
     steps:
       - name: Ngrok Yukle
         run: brew install --cask ngrok
@@ -11,20 +11,18 @@ jobs:
       - name: Ngrok Giris
         run: ngrok config add-authtoken "${{ secrets.NGROK_AUTH_TOKEN }}"
       
-      - name: Sifre ve Ekran Ayari
+      - name: Ekran Paylasimini Ac (Sifresiz Mod)
         run: |
-          # Kullanıcı şifresini 1234 yap
-          sudo dscl . -passwd /Users/runner 1234
-          # Ekran paylaşımını en temel komutla deniyoruz (Hata payı düşük)
+          # Mevcut kullanıcıyı (runner) şifre sormadan VNC'ye yetkili kılıyoruz
           sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate -configure -access -on -privs -all -allowAccessFor -allUsers
           
       - name: Tuneli Baslat
         run: |
-          # VNC Portunu aç
+          # VNC Portunu ac
           ngrok tcp --region eu 5900 > /dev/null &
           sleep 20
-          # Bağlantı linkini ver
-          curl --silent http://127.0.0.1 | jq -r '.tunnels[0].public_url'
+          # Baglanti linkini ver
+          curl --silent http://127.0.0.1 | jq -r '.tunnels.public_url'
           
       - name: 6 Saat Acik Tut
         run: sleep 21600
