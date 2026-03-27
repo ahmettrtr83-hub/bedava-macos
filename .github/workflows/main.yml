@@ -1,0 +1,28 @@
+name: macOS-Xcode-Baglantisi
+on: workflow_dispatch
+
+jobs:
+  macos-calistir:
+    runs-on: macos-12 # Daha esnek olan eski sürümü zorluyoruz
+    steps:
+      - name: Sistemi Hazırla
+        run: brew install tmate
+
+      - name: SSH ve Ekran Tüneli Oluştur
+        run: |
+          # tmate ile bir arka kapı açıyoruz
+          tmate -S /tmp/tmate.sock new-session -d
+          tmate -S /tmp/tmate.sock wait tmate-ready
+          # Bağlantı adresini ekrana yazdır
+          tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}'
+          
+      - name: Xcode Kontrol
+        run: |
+          # Xcode yüklü mü kontrol et ve yolunu göster
+          xcode-select -p
+          ls /Applications/Xcode.app
+          
+      - name: 6 Saat Boyunca Sistemi Açık Tut
+        run: |
+          echo "SİSTEM HAZIR! Yukarıdaki SSH adresini kopyalayın."
+          sleep 21600
