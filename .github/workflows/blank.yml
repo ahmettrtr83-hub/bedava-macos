@@ -8,25 +8,23 @@ jobs:
       - name: Ngrok Yukle
         run: brew install --cask ngrok
       
-      - name: Ngrok Auth Kontrol
-        run: |
-          # Token'ı tırnak içine alarak ekliyoruz (daha güvenli)
-          ngrok config add-authtoken "${{ secrets.NGROK_AUTH_TOKEN }}"
+      - name: Ngrok Giris
+        run: ngrok config add-authtoken "${{ secrets.NGROK_AUTH_TOKEN }}"
       
-      - name: Ekran Paylasimini Ac
+      - name: Ekran Paylasimini Ac (Yeni Yontem)
         run: |
-          # Şifreyi 1234 yapıyoruz
+          # Kullanıcı şifresini belirle
           sudo dscl . -passwd /Users/runner 1234
-          sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate -configure -access -on -restart -agent -privs -all -allowAccessFor -allUsers
           
-      - name: Tuneli Baslat
+          # Ekran paylaşımını en temel seviyede aktif et
+          sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate -configure -access -on -clientopts -setvncpasswd -vncpasswd 1234 -restart -agent -privs -all
+          
+      - name: Tuneli Baslat ve Adres Al
         run: |
-          # Önceki açık kalan oturumları temizlemesi için kill komutu ekledik
-          pkill ngrok || true
-          # Tüneli başlat ve çıktıyı bir dosyaya yaz
+          # VNC portunu (5900) Avrupa sunucusu üzerinden aç
           ngrok tcp --region eu 5900 > /dev/null &
-          sleep 20
-          # Adresi terminale yazdır
+          sleep 15
+          # Bağlantı adresini ekrana yazdır
           curl --silent http://127.0.0.1 | jq -r '.tunnels[0].public_url'
           
       - name: 6 Saat Acik Tut
