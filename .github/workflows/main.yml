@@ -20,13 +20,13 @@ jobs:
           echo "123456" | vncpasswd -f > ~/.vnc/passwd
           chmod 600 ~/.vnc/passwd
           
-          # Hata veren 'kickstart' yerine kendi sanal ekranimizi aciyoruz
-          # Bu komut eski sifre sormaz ve hata vermez
+          # Hata veren 'kickstart' ve 'dscl' komutlarını sildik.
+          # Bu komut eski sifre sormaz ve hata vermez:
           vncserver :1 -geometry 1280x800 -depth 24
           
       - name: Tuneli Baslat ve Baglan
         run: |
-          # VNC Portu (5901) uzerinden tunel aciyoruz
+          # VNC Portu (5901) uzerinden tunel acıyoruz
           ngrok tcp --region eu 5901 > /dev/null &
           sleep 20
           # Baglanti adresini ekrana yazdir
